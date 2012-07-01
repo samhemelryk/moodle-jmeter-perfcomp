@@ -44,10 +44,14 @@ To use:
 To run:
 -------
 1.  In a terminal cd to tools directory and execute the following command (it will take some time).
-2.  jmeter -n -t testplan-simple.jmx -Jusers=1 -Jloops=1 -Jdesc="Default master"
-    * _users=n_ is the number of users to simulate simulaneously (10 max, 10 by default)
+2.  jmeter -n -t testplan-simple.jmx -Jhost=localhost -Jusers=1 -Jloops=1 -Jdesc="Default master"
+    * _host=s_ The URL to run the test script against _required_
+    * _users=n_ is the number of users to simulate simulaneously (20 max, 10 by default)
     * _loops=n_ The number of times to rinse and repeat (no max, 30 by default)
     * _desc=s_ A short description for the run (string)
+    * _rampup=n_ The ramp up period in seconds (3 by default)
+    * _throughput=n_ The target throughput (samples per second)
+    * _repeats=n_ The number of times a user repeats the sequence in a single loop
 3.  Change your Moodle setup however you want and run the command again.
 4.  In your browser pull up the perf tool.
 5.  Select the two branches to compare and go for gold.
@@ -60,5 +64,4 @@ Things to know
    This occurs because the page that displays the confirmation message after the user posts to a forum does not use the standard footer, and thus
    the branch name cannot be found in the page and the default file name "unknown" is used.
 
-3. The user log ins within the JMeter project are terrible, they are a hard coded set and selected randomly. Really a better solution would be
-   to have a small BeanShell script to randomly set them, or some such thing. But I havn't had time.
+3. The user log ins within the JMeter project are pretty average. User details are stored in a CSV file and used consecutively.
