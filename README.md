@@ -61,8 +61,7 @@ Things to know
 --------------
 1. This tool can take an exceptionally long time to run.
 
-2. When running the JMeter tool you may notice that you get two run files each time you run the project. One names properly, and one named unknown.
-   This occurs because the page that displays the confirmation message after the user posts to a forum does not use the standard footer, and thus
-   the branch name cannot be found in the page and the default file name "unknown" is used.
+2. The user log ins within the JMeter project are pretty average. User details are stored in a CSV file and used consecutively.
+   I havn't worked out how to randomise the data coming from a CSV, although I havn't really put any time into it either.
+   If you're passionate about it and come up with a solution please share it as I would like to have randomised users as an option.
 
-3. The user log ins within the JMeter project are pretty average. User details are stored in a CSV file and used consecutively.
