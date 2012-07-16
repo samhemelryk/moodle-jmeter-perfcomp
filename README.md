@@ -34,12 +34,13 @@ To use:
 6.  Browse to your site and make sure you are logged in as an admin
 7.  Browse to /perfcomp.init.php. This will create users, cohorts, courses, and a forum.
 8.  Change the theme for the site to perfcomp.
-9.  Log out.
-10. Log in as teacher01 / teacher01 (username / password)
-11. Browse to Performance comparison course and into Performance test forum
-12. Add a new discussion with any old subject and content.
-13. Log out.
-14. Setup is now complete
+9.  Turn on perfconf
+10. Log out.
+11. Log in as teacher01 / teacher01 (username / password)
+12. Browse to Performance comparison course and into Performance test forum
+13. Add a new discussion with any old subject and content.
+14. Log out.
+15. Setup is now complete
 
 To run:
 -------
