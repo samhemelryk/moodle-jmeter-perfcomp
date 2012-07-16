@@ -57,6 +57,37 @@ To run:
 4.  In your browser pull up the perf tool.
 5.  Select the two branches to compare and go for gold.
 
+Bugs, issues, and other such guff
+---------------------------------
+Please report any bugs within the project on github. https://github.com/samhemelryk/moodle-jmeter-perfcomp/issues
+I will of course endeavour to look into any reported bugs however I don't have much personal time to spare these days so it may take a while for me to get to things.
+Alternativily feel free to produce the fix yourself, if you do please share it back so that I can merge it into the main project and others can benefit.
+
+Before reporting any bugs please check the settings on your Moodle site.
+They can play a big role in how things work, and of course are an easy fix.
+The following table illustrates the settings and their expected values:
+
+    // Required.
+    $CFG->themedesignermode = 0; // Can be turned on but not indicative of a production server.
+    $CFG->cachejs = 1; // Better representation of client timing with this on.
+    $CFG->langstringcache = 1; // Can be turned off but again not indicative of a production server.
+    $CFG->perfdebug = 15; // Absolutely required. This is how we get performance readings from the server.
+    $CFG->passwordpolicy = false; // Passwords created by init script are weak an designed to be predictable.
+
+    // Set by the init scripts but optional.
+    $CFG->enableoutcomes = 1;
+    $CFG->enableportfolios = 1;
+    $CFG->enablewebservices = 1;
+    $CFG->enablestats = 1;
+    $CFG->enablerssfeeds = 1;
+    $CFG->enablecompletion = 1;
+    $CFG->enableavailability = 1;
+    $CFG->enableplagiarism = 1;
+    $CFG->enablecssoptimiser = 1;
+    $CFG->allowthemechangeonurl = 1;
+    $CFG->debugpageinfo = 1;
+
+
 Things to know
 --------------
 1. This tool can take an exceptionally long time to run.
