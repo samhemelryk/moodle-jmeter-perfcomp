@@ -121,12 +121,17 @@ Moodle company
 -Moodle commercial hosting|http://moodle.com/hosting
 -Moodle commercial support|http://moodle.com/support';
 
-set_config('themedesignermode', '1');
-set_config('allowcategorythemes', '1');
-set_config('custommenuitems', $menu);
-set_config('cachejs', '0');
-set_config('langstringcache', '0');
+// Required settings
+set_config('perfdebug', 15);            // Uber essential. This is how we get perf information from the server.
+set_config('themedesignermode', '0');   // Ensured to be off for best representation of production system.
+set_config('cachejs', '1');             // Ensured to be on for best representation of production system.
+set_config('langstringcache', '1');     // Ensured to be on for best representation of production system.
+set_config('passwordpolicy', false);    // Init script creates users with weak + predictable passwords.
 
+// Optional settings.
+// These settings arn't strictly required for the operation of the tool.
+// They are however set because if we set them routinely we can add tests for things and be sure everything is
+// already enabled and ready to go.
 set_config('enableoutcomes', '1');
 set_config('enableportfolios', '1');
 set_config('enablewebservices', '1');
@@ -136,6 +141,9 @@ set_config('enablecompletion', '1');
 set_config('enableavailability', '1');
 set_config('enableplagiarism', '1');
 set_config('enablecssoptimiser', '1');
+set_config('allowthemechangeonurl', 1);
+set_config('debugpageinfo', 1);
+set_config('custommenuitems', $menu);   // Not require but there so we can be sure a constant display.
 
 set_config('custominitexecuted', '1');
 
