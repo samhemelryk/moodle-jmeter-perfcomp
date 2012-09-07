@@ -34,7 +34,6 @@ class page {
     
     public $url;
     public $name;
-    public $gitbranch;
     public $desc;
     public $loopcount;
     public $users;
@@ -56,10 +55,9 @@ class page {
     
     public $count = 0;
     
-    public function __construct($url, $name, $gitbranch, $desc = 'Uknown run', $loopcount = 30, $users = 10) {
+    public function __construct($url, $name, $desc = 'Uknown run', $loopcount = 30, $users = 10) {
         $this->url = $url;
         $this->name = $name;
-        $this->gitbranch = $gitbranch;
         $this->desc = $desc;
         $this->loopcount = $loopcount;
         $this->users = $users;
@@ -92,7 +90,12 @@ class page {
         $return = array();
         foreach ($PROPERTIES as $property) {
             if (property_exists($this, $property)) {
-                $return[$property] = round(array_sum($this->$property)/$this->count, 1);
+                if ($property === 'serverload' || $property === 'timeused') {
+                    $accuracy = 8;
+                } else {
+                    $accuracy = 4;
+                }
+                $return[$property] = round(array_sum($this->$property)/$this->count, $accuracy);
             }
         }
         return $return;
@@ -125,7 +128,7 @@ class page {
                 $count = count($average);
             }
             if ($count > 0) {
-                $results[$key]['average'] = round(array_sum($average) / $count, 1);
+                $results[$key]['average'] = round(array_sum($average) / $count, 2);
             }
         }
 
@@ -134,7 +137,7 @@ class page {
     
     public function average_by_property($property) {
         global $PROPERTIES;
-        
+
         $result = array();
         foreach ($PROPERTIES as $PROPERTY) {
             $result[$PROPERTY] = array();
@@ -226,7 +229,7 @@ function display_organised_results($property, page $before, page $after) {
             if (!empty($propertyaveragesbefore[$key][$p])) {
                 $before = $propertyaveragesbefore[$key][$p];
                 $after = $values[$p];
-                $diff = round($after - $before, 1);
+                $diff = round($after - $before, 2);
                 if ($diff > 0){
                     $color = '#83181F';
                     $diff = "(+$diff)";
@@ -266,7 +269,7 @@ function display_results(page $beforepage, page $afterpage) {
     $output .= "</tr>";
     
     $output .= "<tr>";
-    $output .= "<th style='text-align:right;background-color:#eee;'>$beforepage->gitbranch branch (Before) $beforepage->count hits</th>";
+    $output .= "<th style='text-align:right;background-color:#eee;'>$beforepage->name (Before) $beforepage->count hits</th>";
     foreach ($PROPERTIES as $PROPERTY) {
         $value = $before[$PROPERTY];
         $output .= "<td title='Average: $value[average]\nMin: $value[min]\n Max: $value[max]'>$value[average]</td>";
@@ -274,7 +277,7 @@ function display_results(page $beforepage, page $afterpage) {
     $output .= "</tr>";
     
     $output .= "<tr>";
-    $output .= "<th style='text-align:right;background-color:#eee;'>$afterpage->gitbranch branch (After)  $afterpage->count hits</th>";
+    $output .= "<th style='text-align:right;background-color:#eee;'>$afterpage->name (After)  $afterpage->count hits</th>";
     foreach ($PROPERTIES as $PROPERTY) {
         $ave = $after[$PROPERTY]['average'];
         $min = $after[$PROPERTY]['min'];
@@ -312,7 +315,7 @@ function display_results(page $beforepage, page $afterpage) {
                 $sign = '';
             }
             $p = abs($p)."%";
-            $sp = abs(round($p,1));
+            $sp = abs(round($p,2));
             $perc = '%';
         } else {
             $p = "-";
@@ -345,11 +348,11 @@ function get_runs($dir = null) {
     $files = scandir($dir);
     $runs = array();
     foreach ($files as $file) {
-        if (preg_match('/^(([a-zA-Z0-9\-_]+)\.(\d+)).php$/', $file, $matches)) {
+        if (preg_match('/^([a-zA-Z0-9\-_\.]+).php$/', $file, $matches)) {
             $key = $matches[1];
             $timestamp = time();
             $branch = 'Unknown';
-            if (preg_match('/^([a-zA-Z0-9\-_]+)\.(\d{10})\d*$/', $key, $matches)) {
+            if (preg_match('/^([a-zA-Z0-9\-_\.]+)\.(\d{10})\d*$/', $key, $matches)) {
                 $branch = $matches[1];
                 $timestamp = $matches[2];
             }
@@ -394,7 +397,7 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
         if ($before == $date) {
             $selected = ' selected="selected"';
         }
-        echo "<option$selected value='$date'>$run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
+        echo "<option$selected value='$date'>$run[key] => $run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
     }
     echo "</select>";
     echo "<br />";
@@ -405,7 +408,7 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
         if ($after == $date) {
             $selected = ' selected="selected"';
         }
-        echo "<option$selected value='$date'>$run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
+        echo "<option$selected value='$date'>$run[key] => $run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
     }
     echo "</select>";
     echo "<br />";
@@ -418,7 +421,7 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
 function produce_page_graph($field, $beforekey, page $before, $afterkey, page $after, $width = 800, $height = 600) {
     global $BASEDIR;
     
-    $name = $field.'.'.md5($beforekey.$afterkey.$before->name.$width.$height).'.png';
+    $name = md5($beforekey.$afterkey.$before->name.$after->name).'.'.$field.'.'.(string)$width.'.'.(string)$height.'.png';
     $path = $BASEDIR.'/cache/';
     
     if (file_exists($path.$name) && empty($_GET['force'])) {
@@ -637,11 +640,12 @@ function build_pages_array(array $runs, $before, $after) {
 
     include($runs[$before]['file']);
     foreach ($results as $thread) {
-        foreach ($thread as $page) {
+        foreach ($thread as $result) {
+            $page = array_combine($fields, $result);
             $key = md5($page['name']);
             if (!array_key_exists($key, $pages)) {
                 $pages[$key] = array('before' => null, 'after' => null);
-                $pages[$key]['before'] = new page($page['url'], $page['name'], $page['gitbranch']);
+                $pages[$key]['before'] = new page($page['url'], $page['name']);
             }
             $pages[$key]['before']->from_result($page);
         }
@@ -650,13 +654,14 @@ function build_pages_array(array $runs, $before, $after) {
     $results = array();
     include($runs[$after]['file']);
     foreach ($results as $thread) {
-        foreach ($thread as $page) {
+        foreach ($thread as $result) {
+            $page = array_combine($fields, $result);
             $key = md5($page['name']);
             if (!array_key_exists($key, $pages)) {
                 $pages[$key] = array('before' => null, 'after' => null);
             }
             if (empty($pages[$key]['after'])) {
-                $pages[$key]['after'] = new page($page['url'], $page['name'], $page['gitbranch']);
+                $pages[$key]['after'] = new page($page['url'], $page['name']);
             }
             $pages[$key]['after']->from_result($page);
         }

@@ -69,7 +69,7 @@ MoodleResult(JMeterContext ctx) {
     }
 
     String stringcache = "0";
-    Pattern pstringcache = Pattern.compile(".*?strings mem cache hits: (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    Pattern pstringcache = Pattern.compile(".*?strings disk cache hits: (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
     Matcher mstringcache = pstringcache.matcher(html);
     if (mstringcache.matches()) {
         stringcache = mstringcache.group(1);
@@ -109,24 +109,29 @@ MoodleResult(JMeterContext ctx) {
     }
 
     toPHP() {
-       String php = "$results["+thread+"][] = array(\n";
-       php += "    'thread'=>"+thread+",\n";        // Int
-       php += "    'starttime'=>"+starttime+",\n";      // Long
-       php += "    'dbreads'=>"+Integer.parseInt(dbreads)+",\n";    // String => Int
-       php += "    'dbwrites'=>"+Integer.parseInt(dbwrites)+",\n";  // String => Int
-       php += "    'getstring'=>"+Integer.parseInt(getstring)+",\n";  // String => Int
-       php += "    'stringcache'=>"+Integer.parseInt(stringcache)+",\n";  // String => Int
-       php += "    'memoryused'=>'"+memoryused+"',\n";
-       php += "    'filesincluded'=>'"+filesincluded+"',\n";
-       php += "    'serverload'=>'"+serverload+"',\n";
-       php += "    'sessionsize'=>'"+sessionsize+"',\n";
-       php += "    'timeused'=>'"+timeused+"',\n";
-       php += "    'name'=>'"+name+"',\n";
-       php += "    'url'=>'"+url+"',\n";
-       php += "    'bytes'=>'"+bytes+"',\n";
-       php += "    'time'=>'"+time+"',\n";
-       php += "    'latency'=>'"+latency+"',\n";
+       String php = "$results["+thread+"][] = array(";
+       php += thread+",";        // Int
+       php += starttime+",";      // Long
+       php += Integer.parseInt(dbreads)+",";    // String => Int
+       php += Integer.parseInt(dbwrites)+",";  // String => Int
+       php += Integer.parseInt(getstring)+",";  // String => Int
+       php += Integer.parseInt(stringcache)+",";  // String => Int
+       php += "'"+memoryused+"',";
+       php += "'"+filesincluded+"',";
+       php += "'"+serverload+"',";
+       php += "'"+sessionsize+"',";
+       php += "'"+timeused+"',";
+       php += "'"+name+"',";
+       php += "'"+url+"',";
+       php += "'"+bytes+"',";
+       php += "'"+time+"',";
+       php += "'"+latency+"',";
        php += ");\n";
+       return php;
+    }
+
+    toHeadPHP() {
+       String php = "$fields = array('thread','starttime','dbreads','dbwrites','getstring','stringcache','memoryused','filesincluded','serverload','sessionsize','timeused','name','url','bytes','time','latency');\n";
        return php;
     }
 
@@ -140,6 +145,8 @@ if (filenamepath == null) {
     String gitbranch = vars.get("GITBRANCH");
     String filenamepath = "runs/"+gitbranch+"."+vars.get("RUNTIMESTAMP")+".php";
     JMeterUtils.setProperty("runfile", filenamepath);
+} else {
+    filenamepath = "runs/"+filenamepath;
 }
 
 File f = new File(filenamepath);
@@ -151,6 +158,11 @@ if (!f.exists()) {
     out.write("$rundesc = '"+props.get("desc")+"';\n");
     out.write("$loopcount = '"+props.get("loops")+"';\n");
     out.write("$users = '"+props.get("users")+"';\n");
+    out.write("$throughput = '"+props.get("throughput")+"';\n");
+    out.write("$rampup = '"+props.get("rampup")+"';\n");
+    out.write("$timestampstart = '"+vars.get("RUNTIMESTAMP")+"';\n");
+    out.write(mr.toHeadPHP());
+    out.write("$results = array();\n");
     out.close();
 }
 

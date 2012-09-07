@@ -15,7 +15,7 @@
 
 define('_MANAGERS_', 2);
 define('_TEACHERS_', 5);
-define('_STUDENTS_', 30);
+define('_STUDENTS_', 100);
 
 require_once('config.php');
 require_once($CFG->dirroot.'/course/lib.php');
@@ -147,6 +147,7 @@ set_config('custommenuitems', $menu);   // Not require but there so we can be su
 
 set_config('custominitexecuted', '1');
 
+// Create the category to contain out courses
 $category = new stdClass;
 $category->name = 'Performance test courses';
 $category->description = 'This category contains courses used for performance testing';
