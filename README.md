@@ -14,10 +14,10 @@ This tool is really four tools packaged together for convenience.
 * A JMeter projet that can be opened within JMeter and run from there, or preferably run from the command line. When run it generates a "run" file that contains the performance information.
 * A PHP tool that compares two of the "run" files displaying the information both summarised and as graphs.
 * A Moodle theme to install within Moodle that then embeds the git branch in the bottom of the page to give more descriptive "run" file names.
-* An initialisation script to be run within Moodle that generates the structure and content required by the JMeter project (creates users, course, enrolments).
+* An initialisation script to be run within Moodle that generates the structure and content required by the JMeter project (creates users, course, enrollments).
 
 Obviously the JMeter project requries JMeter to be installed. You can read more about this here: http://jmeter.apache.org/usermanual/get-started.html
-The PHP tool requries that PHP be installed and this tool accessible by the webserver.
+The PHP tool requires that PHP be installed and this tool accessible by the webserver.
 The theme and initialisation script require a Moodle installation (that has not been otherwise used).
 
 This tool has been used with _Moodle 2_ (2.0, 2.1, 2.2, 2.3). It may work with other versions if you are lucky.
@@ -47,12 +47,13 @@ To run:
 1.  In a terminal cd to tools directory and execute the following command (it will take some time).
 2.  jmeter -n -t testplan-simple.jmx -Jhost=localhost -Jusers=1 -Jloops=1 -Jdesc="Default master"
     * _host=s_ The URL to run the test script against _required_
-    * _users=n_ is the number of users to simulate simulaneously (20 max, 10 by default)
+    * _users=n_ is the number of users to simulate simultaneously (20 max, 10 by default)
     * _loops=n_ The number of times to rinse and repeat (no max, 30 by default)
     * _desc=s_ A short description for the run (string)
     * _rampup=n_ The ramp up period in seconds (3 by default)
     * _throughput=n_ The target throughput (samples per second)
     * _repeats=n_ The number of times a user repeats the sequence in a single loop
+    * _runfile=n_ The name to use for the run file. Defaults to the branch and a timestamp
 3.  Change your Moodle setup however you want and run the command again.
 4.  In your browser pull up the perf tool.
 5.  Select the two branches to compare and go for gold.
@@ -61,7 +62,7 @@ Bugs, issues, and other such guff
 ---------------------------------
 Please report any bugs within the project on github. https://github.com/samhemelryk/moodle-jmeter-perfcomp/issues
 I will of course endeavour to look into any reported bugs however I don't have much personal time to spare these days so it may take a while for me to get to things.
-Alternativily feel free to produce the fix yourself, if you do please share it back so that I can merge it into the main project and others can benefit.
+Alternatively feel free to produce the fix yourself, if you do please share it back so that I can merge it into the main project and others can benefit.
 
 Before reporting any bugs please check the settings on your Moodle site.
 They can play a big role in how things work, and of course are an easy fix.
@@ -93,6 +94,6 @@ Things to know
 1. This tool can take an exceptionally long time to run.
 
 2. The user log ins within the JMeter project are pretty average. User details are stored in a CSV file and used consecutively.
-   I havn't worked out how to randomise the data coming from a CSV, although I havn't really put any time into it either.
+   I haven't worked out how to randomise the data coming from a CSV, although I haven't really put any time into it either.
    If you're passionate about it and come up with a solution please share it as I would like to have randomised users as an option.
 

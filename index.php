@@ -20,6 +20,7 @@ $before = null;
 $after = null;
 $width = '300';
 $height = '150';
+$organiseby = 'filesincluded';
 if (!empty($_GET['before']) && array_key_exists($_GET['before'], $runs)) {
     $before = $_GET['before'];
     $beforekey = array_search($before, $runs);
@@ -33,6 +34,9 @@ if (!empty($_GET['w']) && preg_match('/^\d+$/', $_GET['w'])) {
 }
 if (!empty($_GET['h']) && preg_match('/^\d+$/', $_GET['h'])) {
     $height = (int)$_GET['h'];
+}
+if (!empty($_GET['o']) && preg_match('/^[a-z]+$/', $_GET['o'])) {
+    $organiseby = $_GET['o'];
 }
 
 
@@ -55,6 +59,7 @@ if ($before && $after) {
     $count = 0;
     echo "<div id='pagearray'>";
     $statsarray = array();
+    $url = sprintf('index.php?w=%d&h=%d&before=%s&after=%s', $width, $height, urlencode($before), urlencode($after));
     foreach ($pages as $key=>$page) {
         $count++;
         $class = ($count%2)?'odd':'even';
@@ -68,7 +73,7 @@ if ($before && $after) {
         echo $stats;
         echo $output;
         $statsarray[] = $stats;
-        display_organised_results('filesincluded', $page['before'], $page['after']);
+        display_organised_results($organiseby, $page['before'], $page['after'], $url);
         
         echo "<div class='graphdiv'>";
         foreach ($PROPERTIES as $PROPERTY) {

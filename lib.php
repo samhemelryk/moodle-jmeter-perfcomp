@@ -23,8 +23,6 @@ $PREFIX = array(
     'timeused' => '',
     'bytes' => '',
     'latency' => '',
-    'getstring' => '',
-    'stringcache' => '',
 );
 $PROPERTIES = array_keys($PREFIX);
 
@@ -173,9 +171,9 @@ function debug($stuff) {
     echo "</pre>";
 }
 
-function display_organised_results($property, page $before, page $after) {
+function display_organised_results($property, page $before, page $after, $url) {
     global $PROPERTIES, $PREFIX;
-    
+
     $propertyaveragesbefore = $before->average_by_property($property);
     $propertyaveragesafter = $after->average_by_property($property);
     echo "<table cellspacing='0' cellpadding='3px'>";
@@ -185,15 +183,15 @@ function display_organised_results($property, page $before, page $after) {
     echo "<tr style='background-color:#DDD;'>";
     echo "<td></td>";
     $width = round(80/count($PROPERTIES), 1);
-    echo "<td style='width:$width%'>$property</td>";
     foreach ($PROPERTIES as $p) {
         if ($p == $property) {
-            continue;
+            echo "<th style='width:$width%'>$property</th>";
+        } else {
+            echo "<th style='width:$width%'><a href='{$url}&o={$p}'>$p</a></th>";
         }
-        echo "<td style='width:$width%'>$p</td>";
     }
     echo "</tr>";
-    
+
     $keydisplayed = false;
     foreach ($propertyaveragesbefore as $key => $values) {
         echo "<tr>";
@@ -201,12 +199,12 @@ function display_organised_results($property, page $before, page $after) {
             echo "<td rowspan='".count($propertyaveragesbefore)."'><b>Before</b></td>";
             $keydisplayed = true;
         }
-        echo "<td style='background-color:#EEE;'>$key ($values[count] hits)</td>";
         foreach ($PROPERTIES as $p) {
             if ($p == $property) {
-                continue;
+                echo "<td style='background-color:#EEE;'>$key ($values[count] hits)</td>";
+            } else {
+                echo "<td>".$values[$p].$PREFIX[$p]."</td>";
             }
-            echo "<td>".$values[$p].$PREFIX[$p]."</td>";
         }
         echo "</tr>";
     }
@@ -218,28 +216,29 @@ function display_organised_results($property, page $before, page $after) {
             echo "<td rowspan='".count($propertyaveragesafter)."'><b>After</b></td>";
             $keydisplayed = true;
         }
-        echo "<td style='background-color:#EEE;'>$key ($values[count] hits)</td>";
         foreach ($PROPERTIES as $p) {
             if ($p == $property) {
-                continue;
-            }
-            if (!empty($propertyaveragesbefore[$key][$p])) {
-                $before = $propertyaveragesbefore[$key][$p];
-                $after = $values[$p];
-                $diff = round($after - $before, 1);
-                if ($diff > 0){
-                    $color = '#83181F';
-                    $diff = "(+$diff)";
-                } else if ($diff < 0) {
-                    $color = '#188327';
-                    $diff = "($diff)";
-                } else {
-                    $color = '#666';
-                    $diff = '';
-                }
-                echo "<td style='color:$color'>".$after.$PREFIX[$p]." $diff</td>";
+                echo "<td style='background-color:#EEE;'>$key ($values[count] hits)</td>";
             } else {
-                echo "<td>".$values[$p].$PREFIX[$p]."</td>";
+                if (!empty($propertyaveragesbefore[$key][$p])) {
+                    $before = $propertyaveragesbefore[$key][$p];
+                    $after = $values[$p];
+                    $diff = $after - $before;
+                    $roundeddiff = abs(round($diff, 2));
+                    if ($diff > 0.1){
+                        $color = '#83181F';
+                        $diff = "(+$roundeddiff)";
+                    } else if ($diff < 0.1) {
+                        $color = '#188327';
+                        $diff = "(-$roundeddiff)";
+                    } else {
+                        $color = '#666';
+                        $diff = '';
+                    }
+                    echo "<td style='color:$color'>".$after.$PREFIX[$p]." $diff</td>";
+                } else {
+                    echo "<td>".$values[$p].$PREFIX[$p]."</td>";
+                }
             }
         }
         echo "</tr>";
@@ -345,7 +344,7 @@ function get_runs($dir = null) {
     $files = scandir($dir);
     $runs = array();
     foreach ($files as $file) {
-        if (preg_match('/^(([a-zA-Z0-9\-_]+)\.(\d+)).php$/', $file, $matches)) {
+        if (preg_match('/^(([a-zA-Z0-9\-_]+)(\.(\d+))?).php$/', $file, $matches)) {
             $key = $matches[1];
             $timestamp = time();
             $branch = 'Unknown';
@@ -641,7 +640,7 @@ function build_pages_array(array $runs, $before, $after) {
             $key = md5($page['name']);
             if (!array_key_exists($key, $pages)) {
                 $pages[$key] = array('before' => null, 'after' => null);
-                $pages[$key]['before'] = new page($page['url'], $page['name'], $page['gitbranch']);
+                $pages[$key]['before'] = new page($page['url'], $page['name'], 'unknown');
             }
             $pages[$key]['before']->from_result($page);
         }
@@ -656,7 +655,7 @@ function build_pages_array(array $runs, $before, $after) {
                 $pages[$key] = array('before' => null, 'after' => null);
             }
             if (empty($pages[$key]['after'])) {
-                $pages[$key]['after'] = new page($page['url'], $page['name'], $page['gitbranch']);
+                $pages[$key]['after'] = new page($page['url'], $page['name'], 'unknown');
             }
             $pages[$key]['after']->from_result($page);
         }

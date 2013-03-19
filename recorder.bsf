@@ -61,20 +61,6 @@ MoodleResult(JMeterContext ctx) {
         timeused = mtimeused.group(1);
     }
 
-    String getstring = "0";
-    Pattern pgetstring = Pattern.compile(".*?get_string calls: (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mgetstring = pgetstring.matcher(html);
-    if (mgetstring.matches()) {
-        getstring = mgetstring.group(1);
-    }
-
-    String stringcache = "0";
-    Pattern pstringcache = Pattern.compile(".*?strings mem cache hits: (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mstringcache = pstringcache.matcher(html);
-    if (mstringcache.matches()) {
-        stringcache = mstringcache.group(1);
-    }
-
     // Actual information collected about the sample by jmeter
     String username = vars.get("username");
     String name = StringUtils.rightPad(result.getSampleLabel(), 30);
@@ -88,7 +74,7 @@ MoodleResult(JMeterContext ctx) {
     headerToString() {
         String str = "status | thread | ";
         str += StringUtils.rightPad("user", 10) + " | ";
-        str += StringUtils.rightPad("name", 30) + " | db-w | db-r | ";
+        str += StringUtils.rightPad("name", 30) + " | db-r | db-w | ";
         str += StringUtils.rightPad("memory", 8) + " | ";
         str += StringUtils.rightPad("files", 6) + " | ";
         str += StringUtils.rightPad("load", 6) + " |";
@@ -140,6 +126,8 @@ if (filenamepath == null) {
     String gitbranch = vars.get("GITBRANCH");
     String filenamepath = "runs/"+gitbranch+"."+vars.get("RUNTIMESTAMP")+".php";
     JMeterUtils.setProperty("runfile", filenamepath);
+} else {
+    filenamepath = "runs/"+filenamepath+".php";
 }
 
 File f = new File(filenamepath);
@@ -148,9 +136,12 @@ if (!f.exists()) {
     BufferedWriter out = new BufferedWriter(fstream);
     out.write("<?php\n");
     out.write("$host = '"+props.get("host")+"';\n");
-    out.write("$rundesc = '"+props.get("desc")+"';\n");
-    out.write("$loopcount = '"+props.get("loops")+"';\n");
     out.write("$users = '"+props.get("users")+"';\n");
+    out.write("$loopcount = '"+props.get("loops")+"';\n");
+    out.write("$rundesc = '"+props.get("desc")+"';\n");
+    out.write("$rampup = '"+props.get("rampup")+"';\n");
+    out.write("$throughput = '"+props.get("throughput")+"';\n");
+    out.write("$repeats = '"+props.get("repeats")+"';\n");
     out.close();
 }
 

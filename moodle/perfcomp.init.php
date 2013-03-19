@@ -13,9 +13,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('_MANAGERS_', 2);
-define('_TEACHERS_', 5);
-define('_STUDENTS_', 30);
+define('_MANAGERS_', 5);
+define('_TEACHERS_', 10);
+define('_STUDENTS_', 99);
 
 require_once('config.php');
 require_once($CFG->dirroot.'/course/lib.php');
