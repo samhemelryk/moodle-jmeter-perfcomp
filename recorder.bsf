@@ -100,8 +100,6 @@ MoodleResult(JMeterContext ctx) {
        php += "    'starttime'=>"+starttime+",\n";      // Long
        php += "    'dbreads'=>"+Integer.parseInt(dbreads)+",\n";    // String => Int
        php += "    'dbwrites'=>"+Integer.parseInt(dbwrites)+",\n";  // String => Int
-       php += "    'getstring'=>"+Integer.parseInt(getstring)+",\n";  // String => Int
-       php += "    'stringcache'=>"+Integer.parseInt(stringcache)+",\n";  // String => Int
        php += "    'memoryused'=>'"+memoryused+"',\n";
        php += "    'filesincluded'=>'"+filesincluded+"',\n";
        php += "    'serverload'=>'"+serverload+"',\n";

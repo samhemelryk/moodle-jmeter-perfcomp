@@ -49,8 +49,6 @@ class page {
     public $bytes = array();
     public $time = array();
     public $latency = array();
-    public $getstring = array();
-    public $stringcache = array();
     
     public $count = 0;
     
@@ -159,10 +157,34 @@ class page {
         
         return $valueresult;
     }
+
+    public function strip_to_most_common_only($organiseby = 'filesincluced') {
+        global $PROPERTIES;
+
+        $result = array();
+        foreach ($this->$organiseby as $key => $value) {
+            $value = (string)$value;
+            if (!isset($result[$value])) {
+                $result[$value] = 0;
+            }
+            $result[$value]++;
+        }
+        arsort($result);
+        reset($result);
+
+        $mostcommon = key($result);
+        foreach ($this->$organiseby as $key => $value) {
+            if ($value != $mostcommon) {
+                foreach ($PROPERTIES as $PROPERTY) {
+                    unset($this->{$PROPERTY}[$key]);
+                }
+            }
+        }
+    }
 }
 
 function debug($stuff) {
-    echo "<pre style='background-color:#FFF;font-size:8pt;max-height:300px;overflow:auto;'>";
+    echo "<pre style='background-color:#FFF;font-size:8pt;max-height:300px;overflow:auto;'>DEBUG: ";
     ob_start();
     print_r($stuff);
     $html = ob_get_contents();
@@ -171,7 +193,7 @@ function debug($stuff) {
     echo "</pre>";
 }
 
-function display_organised_results($property, page $before, page $after, $url) {
+function display_organised_results($property, page $before, page $after) {
     global $PROPERTIES, $PREFIX;
 
     $propertyaveragesbefore = $before->average_by_property($property);
@@ -187,7 +209,7 @@ function display_organised_results($property, page $before, page $after, $url) {
         if ($p == $property) {
             echo "<th style='width:$width%'>$property</th>";
         } else {
-            echo "<th style='width:$width%'><a href='{$url}&o={$p}'>$p</a></th>";
+            echo "<th style='width:$width%'>$p</th>";
         }
     }
     echo "</tr>";
@@ -380,13 +402,13 @@ function get_runs($dir = null) {
     return $runs;
 }
 
-function display_run_selector(array $runs, $before=null, $after=null, array $params = array()) {
+function display_run_selector(array $runs, $before=null, $after=null, array $params = array(), $organiseby = 'filesincluded', $mostcommononly = false) {
     echo "<div class='runselector'>";
     echo "<form method='get' action=''>";
     foreach ($params as $key => $value) {
         echo "<input type='hidden' name='$key' value='$value' />";
     }
-    echo "<label for='before'>Before: </label>";
+    echo "<label for='before'>Before:&nbsp;</label>";
     echo "<select name='before' id='before'>";
     foreach ($runs as $date => $run) {
         $selected = '';
@@ -396,8 +418,7 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
         echo "<option$selected value='$date'>$run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
     }
     echo "</select>";
-    echo "<br />";
-    echo "<label for='after'>After: </label>";
+    echo "<label for='after'>After:&nbsp;</label>";
     echo "<select name='after' id='after'>";
     foreach ($runs as $date => $run) {
         $selected = '';
@@ -407,6 +428,30 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
         echo "<option$selected value='$date'>$run[desc] - $run[branch] ($run[users] users * $run[loopcount] loop) $run[time]</option>";
     }
     echo "</select>";
+    echo "<hr />";
+    if ($mostcommononly) {
+        echo "<input type='checkbox' name='x' value='1' checked='checked' /> Group by and display the most common result set. This will be organised as selected.";
+    } else {
+        echo "<input type='checkbox' name='x' value='1' /> Group by and display the most common result set only. This will be organised as selected.";
+    }
+    echo "<br />";
+    echo "<label for='o'>Organise by:&nbsp;</label>";
+    echo "<select name='o' id='o'>";
+    $options = array(
+        'dbreads' => 'DB reads',
+        'dbwrites' => 'DB writes',
+        'filesincluded' => 'Files included',
+        'bytes' => 'Bytes',
+    );
+    
+    foreach ($options as $value => $string) {
+        $selected = '';
+        if ($value == $organiseby) {
+            $selected = ' selected="selected"';
+        }
+        echo "<option$selected value='$value'>$string</option>";
+    }
+    echo "</select>";
     echo "<br />";
     echo "<input type='submit' value='Load' />";
     echo "</form>";
@@ -414,10 +459,10 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
     echo "</div>";
 }
 
-function produce_page_graph($field, $beforekey, page $before, $afterkey, page $after, $width = 800, $height = 600) {
+function produce_page_graph($field, $beforekey, page $before, $afterkey, page $after, $width = 800, $height = 600, array $options = array()) {
     global $BASEDIR;
     
-    $name = $field.'.'.md5($beforekey.$afterkey.$before->name.$width.$height).'.png';
+    $name = $field.'.'.md5($beforekey.$afterkey.$before->name.$width.$height.serialize($options)).'.png';
     $path = $BASEDIR.'/cache/';
     
     if (file_exists($path.$name) && empty($_GET['force'])) {

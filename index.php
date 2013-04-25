@@ -21,6 +21,7 @@ $after = null;
 $width = '300';
 $height = '150';
 $organiseby = 'filesincluded';
+$mostcommononly = false;
 if (!empty($_GET['before']) && array_key_exists($_GET['before'], $runs)) {
     $before = $_GET['before'];
     $beforekey = array_search($before, $runs);
@@ -38,6 +39,9 @@ if (!empty($_GET['h']) && preg_match('/^\d+$/', $_GET['h'])) {
 if (!empty($_GET['o']) && preg_match('/^[a-z]+$/', $_GET['o'])) {
     $organiseby = $_GET['o'];
 }
+if (!empty($_GET['x']) && preg_match('/^(0|1|true|false)$/', $_GET['x'])) {
+    $mostcommononly = (bool)$_GET['x'];
+}
 
 
 $pages = array();
@@ -53,17 +57,20 @@ echo "<script type='text/javascript' src='resources/jmeter.js'></script>";
 echo "</head>";
 echo "<body>";
 
-display_run_selector($runs, $before, $after, array('w' => $width, 'h' => $height));
+display_run_selector($runs, $before, $after, array('w' => $width, 'h' => $height), $organiseby, $mostcommononly);
 
 if ($before && $after) {
     $count = 0;
     echo "<div id='pagearray'>";
     $statsarray = array();
-    $url = sprintf('index.php?w=%d&h=%d&before=%s&after=%s', $width, $height, urlencode($before), urlencode($after));
-    foreach ($pages as $key=>$page) {
+    foreach ($pages as $key => $page) {
         $count++;
         $class = ($count%2)?'odd':'even';
         $classkey = substr($key, 0, 8);
+        if ($mostcommononly) {
+            $page['before']->strip_to_most_common_only($organiseby);
+            $page['after']->strip_to_most_common_only($organiseby);
+        }
         echo "<div class='pagecontainer $class page-$classkey'>";
         echo "<h1 class='pagetitle'>".$page['before']->name."</h1>";
         echo "<h2 class='pagesubtitle'><a href='".$page['before']->url."'>".$page['before']->url."</a></h2>";
@@ -73,7 +80,7 @@ if ($before && $after) {
         echo $stats;
         echo $output;
         $statsarray[] = $stats;
-        display_organised_results($organiseby, $page['before'], $page['after'], $url);
+        display_organised_results($organiseby, $page['before'], $page['after']);
         
         echo "<div class='graphdiv'>";
         foreach ($PROPERTIES as $PROPERTY) {
@@ -81,7 +88,7 @@ if ($before && $after) {
                 continue;
             }
             echo "<a href='graph.php?before=$before&after=$after&property=$PROPERTY&page=$key' class='largegraph'>";
-            echo "<img src='./cache/".produce_page_graph($PROPERTY, $beforekey, $page['before'], $afterkey, $page['after'], $width, $height)."' alt='$PROPERTY' style='width:{$width}px;height:{$height}px;' />";
+            echo "<img src='./cache/".produce_page_graph($PROPERTY, $beforekey, $page['before'], $afterkey, $page['after'], $width, $height, array('x' => $mostcommononly))."' alt='$PROPERTY' style='width:{$width}px;height:{$height}px;' />";
             echo "</a>";
         }
         echo "</div>";
