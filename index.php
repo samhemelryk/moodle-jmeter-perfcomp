@@ -24,11 +24,9 @@ $organiseby = 'filesincluded';
 $mostcommononly = false;
 if (!empty($_GET['before']) && array_key_exists($_GET['before'], $runs)) {
     $before = $_GET['before'];
-    $beforekey = array_search($before, $runs);
 }
 if (!empty($_GET['after']) && array_key_exists($_GET['after'], $runs)) {
     $after = $_GET['after'];
-    $afterkey = array_search($after, $runs);
 }
 if (!empty($_GET['w']) && preg_match('/^\d+$/', $_GET['w'])) {
     $width = (int)$_GET['w'];
@@ -42,7 +40,6 @@ if (!empty($_GET['o']) && preg_match('/^[a-z]+$/', $_GET['o'])) {
 if (!empty($_GET['x']) && preg_match('/^(0|1|true|false)$/', $_GET['x'])) {
     $mostcommononly = (bool)$_GET['x'];
 }
-
 
 $pages = array();
 if ($before && $after) {
@@ -64,6 +61,9 @@ if ($before && $after) {
     echo "<div id='pagearray'>";
     $statsarray = array();
     foreach ($pages as $key => $page) {
+        if (!is_object($page['before']) || !is_object($page['after'])) {
+            continue;
+        }
         $count++;
         $class = ($count%2)?'odd':'even';
         $classkey = substr($key, 0, 8);
@@ -87,8 +87,9 @@ if ($before && $after) {
             if (!property_exists($page['before'], $PROPERTY)) {
                 continue;
             }
+            $graphfile = produce_page_graph($PROPERTY, $before, $page['before'], $after, $page['after'], $width, $height, array('x' => $mostcommononly));
             echo "<a href='graph.php?before=$before&after=$after&property=$PROPERTY&page=$key' class='largegraph'>";
-            echo "<img src='./cache/".produce_page_graph($PROPERTY, $beforekey, $page['before'], $afterkey, $page['after'], $width, $height, array('x' => $mostcommononly))."' alt='$PROPERTY' style='width:{$width}px;height:{$height}px;' />";
+            echo "<img src='./cache/".$graphfile."' alt='$PROPERTY' style='width:{$width}px;height:{$height}px;' />";
             echo "</a>";
         }
         echo "</div>";

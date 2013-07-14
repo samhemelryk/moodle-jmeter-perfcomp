@@ -91,6 +91,7 @@ MoodleResult(JMeterContext ctx) {
         str += StringUtils.rightPad(memoryused, 8) + " | ";
         str += StringUtils.rightPad(filesincluded, 6) + " | ";
         str += StringUtils.rightPad(serverload, 6) + " | ";
+        str += url;
         return str;
     }
 
@@ -130,6 +131,11 @@ if (filenamepath == null) {
 
 File f = new File(filenamepath);
 if (!f.exists()) {
+    FileWriter fstream = new FileWriter(filenamepath, true);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write("");
+    out.close();
+
     FileWriter fstream = new FileWriter(filenamepath, true);
     BufferedWriter out = new BufferedWriter(fstream);
     out.write("<?php\n");

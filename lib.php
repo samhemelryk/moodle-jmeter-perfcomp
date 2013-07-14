@@ -88,7 +88,7 @@ class page {
         $return = array();
         foreach ($PROPERTIES as $property) {
             if (property_exists($this, $property)) {
-                $return[$property] = round(array_sum($this->$property)/$this->count, 1);
+                $return[$property] = round(array_sum($this->$property)/$this->count, 2);
             }
         }
         return $return;
@@ -121,7 +121,7 @@ class page {
                 $count = count($average);
             }
             if ($count > 0) {
-                $results[$key]['average'] = round(array_sum($average) / $count, 1);
+                $results[$key]['average'] = round(array_sum($average) / $count, 2);
             }
         }
 
@@ -183,8 +183,8 @@ class page {
     }
 }
 
-function debug($stuff) {
-    echo "<pre style='background-color:#FFF;font-size:8pt;max-height:300px;overflow:auto;'>DEBUG: ";
+function debug($stuff, $title = 'DEBUG') {
+    echo "<pre style='background-color:#FFF;font-size:8pt;max-height:300px;overflow:auto;'>$title: ";
     ob_start();
     print_r($stuff);
     $html = ob_get_contents();
@@ -366,7 +366,7 @@ function get_runs($dir = null) {
     $files = scandir($dir);
     $runs = array();
     foreach ($files as $file) {
-        if (preg_match('/^(([a-zA-Z0-9\-_]+)(\.(\d+))?).php$/', $file, $matches)) {
+        if (preg_match('/^(.*?).php$/', $file, $matches)) {
             $key = $matches[1];
             $timestamp = time();
             $branch = 'Unknown';
@@ -461,12 +461,17 @@ function display_run_selector(array $runs, $before=null, $after=null, array $par
 
 function produce_page_graph($field, $beforekey, page $before, $afterkey, page $after, $width = 800, $height = 600, array $options = array()) {
     global $BASEDIR;
-    
-    $name = $field.'.'.md5($beforekey.$afterkey.$before->name.$width.$height.serialize($options)).'.png';
+
+    $subdir = md5($beforekey.$afterkey.$before->name.$width.$height.serialize($options));
+    $name = $subdir.'/'.$field.'.png';
     $path = $BASEDIR.'/cache/';
-    
+
     if (file_exists($path.$name) && empty($_GET['force'])) {
         return $name;
+    }
+
+    if (!is_dir($path.$subdir)) {
+        mkdir($path.$subdir);
     }
     
     $image = imagecreatetruecolor($width, $height);
@@ -711,9 +716,17 @@ function build_pages_array(array $runs, $before, $after) {
     foreach ($pages as $pagearray) {
         foreach ($PROPERTIES as $PROPERTY) {
             $count = 0;
+            if (!isset($pagearray['before']->$PROPERTY)) {
+                continue;
+            }
+            if (!isset($pagearray['after']->$PROPERTY)) {
+                continue;
+            }
             foreach ($pagearray['before']->$PROPERTY as $key => $value) {
                 if (!isset($combined['before']->{$PROPERTY}[$key])) {
                     $combined['before']->{$PROPERTY}[$key] = 0;
+                }
+                if (!isset($combined['after']->{$PROPERTY}[$key])) {
                     $combined['after']->{$PROPERTY}[$key] = 0;
                 }
                 $combined['before']->{$PROPERTY}[$key] += $value;
