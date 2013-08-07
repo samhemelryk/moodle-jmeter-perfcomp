@@ -54,6 +54,7 @@ To run:
     * _throughput=n_ The target throughput (samples per second)
     * _repeats=n_ The number of times a user repeats the sequence in a single loop
     * _runfile=n_ The name to use for the run file. Defaults to the branch and a timestamp
+    * _sitepath=s_ The path to the moodle site, useful in case the site URL is different than the host. Defaults to the host
 3.  Change your Moodle setup however you want and run the command again.
 4.  In your browser pull up the perf tool.
 5.  Select the two branches to compare and go for gold.
