@@ -122,9 +122,9 @@ Runnable mr = MoodleResult(ctx);
 
 String filenamepath = JMeterUtils.getProperty("runfile");
 if (filenamepath == null) {
-    String gitbranch = vars.get("GITBRANCH");
-    String filenamepath = "runs/"+gitbranch+"."+vars.get("RUNTIMESTAMP")+".php";
-    JMeterUtils.setProperty("runfile", filenamepath);
+    String defaultfilename = vars.get("GITBRANCH")+"."+vars.get("RUNTIMESTAMP");
+    JMeterUtils.setProperty("runfile", defaultfilename);
+    filenamepath = "runs/"+defaultfilename+".php";
 } else {
     filenamepath = "runs/"+filenamepath+".php";
 }
